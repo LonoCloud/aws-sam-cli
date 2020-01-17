@@ -13,6 +13,7 @@ from samcli.commands._utils.options import (
     metadata_override_option,
     notification_arns_override_option,
     parameter_override_option,
+    resources_to_import_option,
     tags_override_option,
     template_click_option,
 )
@@ -131,6 +132,7 @@ LOG = logging.getLogger(__name__)
 @notification_arns_override_option
 @tags_override_option
 @parameter_override_option
+@resources_to_import_option
 @capabilities_override_option
 @aws_creds_options
 @common_options
@@ -155,6 +157,7 @@ def cli(
     metadata,
     guided,
     confirm_changeset,
+    resources_to_import,
 ):
 
     # All logic must be implemented in the ``do_cli`` method. This helps with easy unit testing
@@ -176,6 +179,7 @@ def cli(
         metadata,
         guided,
         confirm_changeset,
+        resources_to_import,
         ctx.region,
         ctx.profile,
     )  # pragma: no cover
@@ -199,6 +203,7 @@ def do_cli(
     metadata,
     guided,
     confirm_changeset,
+    resources_to_import,
     region,
     profile,
 ):
@@ -216,6 +221,7 @@ def do_cli(
             region=region,
             profile=profile,
             confirm_changeset=confirm_changeset,
+            # TODO: Add resources_to_import?
             capabilities=capabilities,
             parameter_overrides=parameter_overrides,
             config_section=CONFIG_SECTION,
@@ -258,5 +264,6 @@ def do_cli(
             region=guided_context.guided_region if guided else region,
             profile=profile,
             confirm_changeset=guided_context.confirm_changeset if guided else confirm_changeset,
+            resources_to_import=resources_to_import,
         ) as deploy_context:
             deploy_context.run()

@@ -4,6 +4,7 @@ Implementation of custom click parameter types
 
 import re
 import json
+
 from json import JSONDecodeError
 
 import click
@@ -59,6 +60,35 @@ def _unquote_wrapped_quotes(value):
         value = value.strip('"')
 
     return value.replace("\\ ", " ").replace('\\"', '"')
+
+
+class CfnResourcesToImportType(click.ParamType):
+    """
+    Custom Click options type to accept values for Cloudformation resources-to-import.  You can pass values for
+    resources as json (only, for now) per the docs:
+    https://docs.aws.amazon.com/cli/latest/reference/cloudformation/create-change-set.html
+    """
+
+    __EXAMPLE = '{"ResourceType":"AWS::S3::Bucket","LogicalResourceId":"ImportedBucket","ResourceIdentifier":{"BucketName":"bucket-name"}}'
+
+    def convert(self, value, param, ctx):
+        result = {}
+        fail = False
+        if not value:
+            return result
+        try:
+            # Look to load the value into json if we can.
+            result = [json.loads(v) for v in value]
+        except JSONDecodeError:
+            # TODO: Come up with a regex to do this
+            fail = True
+
+        if fail:
+            return self.fail(
+                "{} is not in valid format. It must look something like '{}'".format(value, self._EXAMPLE), param, ctx
+            )
+
+        return result
 
 
 class CfnParameterOverridesType(click.ParamType):
