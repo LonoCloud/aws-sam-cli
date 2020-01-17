@@ -60,6 +60,22 @@ def _unquote_wrapped_quotes(value):
 
     return value.replace("\\ ", " ").replace('\\"', '"')
 
+class CfnResourcesToImportType(click.ParamType):
+    """
+    TODO. Cleanup. Document. Add error handling.
+    """
+
+    def convert(self, value, param, ctx):
+        # pylint: disable=protected-access
+        import awscli.clidriver
+        d = awscli.clidriver.create_clidriver()
+        name = 'process-cli-arg.cloudformation.create-change-set'
+        rti_arg = d._get_command_table()['cloudformation'] \
+                ._create_command_table()['create-change-set'] \
+                .arg_table['resources-to-import']
+        resources_to_import = d.session.emit(name, cli_argument=rti_arg, value=list(value))[0][1]
+        return resources_to_import
+
 
 class CfnParameterOverridesType(click.ParamType):
     """
