@@ -4,6 +4,7 @@ Implementation of custom click parameter types
 
 import re
 import json
+
 from json import JSONDecodeError
 
 import click
@@ -19,21 +20,46 @@ VALUE_REGEX_SPACE_DELIM = _value_regex(" ")
 # Use this regex when you have comma as delimiter Ex: "KeyName1=string,KeyName2=string"
 VALUE_REGEX_COMMA_DELIM = _value_regex(",")
 
+
 class CfnResourcesToImportType(click.ParamType):
     """
-    TODO. Cleanup. Document. Add error handling.
+    Custom Click options type to accept values for Cloudformation resources-to-import.  You can pass values for
+    resources as json (only, for now) per the docs:
+    https://docs.aws.amazon.com/cli/latest/reference/cloudformation/create-change-set.html
     """
 
+    __EXAMPLE = '{"ResourceType":"AWS::S3::Bucket","LogicalResourceId":"ImportedBucket","ResourceIdentifier":{"BucketName":"bucket-name"}}'
+
+    # Neat way to do it with the aws cli, but I don't think I want that as a dependency
+    # def convert(self, value, param, ctx):
+    #     # pylint: disable=protected-access
+    #     import awscli.clidriver
+    #     d = awscli.clidriver.create_clidriver()
+    #     name = 'process-cli-arg.cloudformation.create-change-set'
+    #     rti_arg = d._get_command_table()['cloudformation'] \
+    #             ._create_command_table()['create-change-set'] \
+    #             .arg_table['resources-to-import']
+    #     resources_to_import = d.session.emit(name, cli_argument=rti_arg, value=list(value))[0][1]
+    #     return resources_to_import
+
     def convert(self, value, param, ctx):
-        # pylint: disable=protected-access
-        import awscli.clidriver
-        d = awscli.clidriver.create_clidriver()
-        name = 'process-cli-arg.cloudformation.create-change-set'
-        rti_arg = d._get_command_table()['cloudformation'] \
-                ._create_command_table()['create-change-set'] \
-                .arg_table['resources-to-import']
-        resources_to_import = d.session.emit(name, cli_argument=rti_arg, value=list(value))[0][1]
-        return resources_to_import
+        result = {}
+        fail = False
+        if not value:
+            return result
+        try:
+            # Look to load the value into json if we can.
+            result = [json.loads(v) for v in value]
+        except JSONDecodeError:
+            # TODO: Come up with a regex to do this
+            fail = True
+
+        if fail:
+            return self.fail(
+                "{} is not in valid format. It must look something like '{}'".format(value, self._EXAMPLE), param, ctx
+            )
+
+        return result
 
 
 class CfnParameterOverridesType(click.ParamType):

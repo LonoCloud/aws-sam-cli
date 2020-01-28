@@ -127,7 +127,6 @@ LOG = logging.getLogger(__name__)
     help="Indicates whether to use JSON as the format for "
     "the output AWS CloudFormation template. YAML is used by default.",
 )
-
 @metadata_override_option
 @notification_arns_override_option
 @tags_override_option

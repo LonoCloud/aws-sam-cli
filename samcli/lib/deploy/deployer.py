@@ -117,7 +117,16 @@ class Deployer:
             raise e
 
     def create_changeset(
-            self, stack_name, cfn_template, parameter_values, capabilities, role_arn, notification_arns, s3_uploader, tags, resources_to_import
+        self,
+        stack_name,
+        cfn_template,
+        parameter_values,
+        capabilities,
+        role_arn,
+        notification_arns,
+        s3_uploader,
+        tags,
+        resources_to_import,
     ):
         """
         Call Cloudformation to create a changeset and wait for it to complete
@@ -161,9 +170,7 @@ class Deployer:
         }
 
         if resources_to_import:
-            kwargs['ResourcesToImport'] = resources_to_import
-
-
+            kwargs["ResourcesToImport"] = resources_to_import
 
         # If an S3 uploader is available, use TemplateURL to deploy rather than
         # TemplateBody. This is required for large templates.
@@ -409,11 +416,28 @@ class Deployer:
         self.get_stack_outputs(stack_name=stack_name)
 
     def create_and_wait_for_changeset(
-            self, stack_name, cfn_template, parameter_values, capabilities, role_arn, notification_arns, s3_uploader, tags, resources_to_import
+        self,
+        stack_name,
+        cfn_template,
+        parameter_values,
+        capabilities,
+        role_arn,
+        notification_arns,
+        s3_uploader,
+        tags,
+        resources_to_import,
     ):
         try:
             result, changeset_type = self.create_changeset(
-                stack_name, cfn_template, parameter_values, capabilities, role_arn, notification_arns, s3_uploader, tags, resources_to_import
+                stack_name,
+                cfn_template,
+                parameter_values,
+                capabilities,
+                role_arn,
+                notification_arns,
+                s3_uploader,
+                tags,
+                resources_to_import,
             )
             self.wait_for_changeset(result["Id"], stack_name)
             self.describe_changeset(result["Id"], stack_name)
